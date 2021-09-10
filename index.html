@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Webpack App</title>
+</head>
+
+<body>
+    <aside>
+        <div class="btn" onclick="window.dispatchEvent(new Event('imageSelect'))"> select an image </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('savePixels'))"> save selected pixels </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('pen'))"> pen </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('eraser'))"> eraser </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('clear'))"> clear </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('z+'))"> zoom in + </div>
+        <div class="btn" onclick="window.dispatchEvent(new Event('z-'))"> zoom out -</div>
+        <input type="file" id="imageInput" class="hide">
+    </aside>
+
+    <div id="container">
+    </div>
+
+    <footer id="footer"> </footer>
+</body>
+
+</html>
