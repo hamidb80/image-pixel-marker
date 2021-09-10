@@ -22,9 +22,7 @@ let
   }),
   mainLayer = new Konva.Layer(),
   group = new Konva.Group(),
-  imgEl = document.getElementById("imageElement"),
-  filInput = document.getElementById("imageInput"),
-  imgObj
+  filInput = document.getElementById("imageInput")
 
 mainLayer.imageSmoothingEnabled(false)
 
@@ -62,11 +60,42 @@ register("eraser", () => selectedTool = ERASER)
 register("imageSelect", () => filInput.click())
 register("z+", () => addScale(+1))
 register("z-", () => addScale(-1))
+register("wheel", ev => moveCanvas(-ev.deltaX, -ev.deltaY))
+register("keydown", ev => {
+  let move = []
+
+  if (ev.key === "ArrowUp")
+    move = [0, +MOVE_SPEED]
+  else if (ev.key === "ArrowDown")
+    move = [0, -MOVE_SPEED]
+  else if (ev.key === "ArrowLeft")
+    move = [+MOVE_SPEED, 0]
+  else if (ev.key === "ArrowRight")
+    move = [-MOVE_SPEED, 0]
+
+  if (move.length == 2)
+    moveCanvas(...move.map(n => n * (ev.shiftKey ? 10 : 1)))
+})
+register("clear", () => {
+  for (const row_i in coloredCellsMap) {
+    for (const col_i in coloredCellsMap[row_i]) {
+      coloredCellsMap[row_i][col_i].destroy()
+      delete coloredCellsMap[row_i][col_i]
+    }
+  }
+})
+register("save", () => {
+  let listOfPoints = []
+  for (const row_i in coloredCellsMap)
+    for (const col_i in coloredCellsMap[row_i])
+      listOfPoints.push([col_i, row_i,].map(n => Number(n))) // [x, y]
+
+  console.log(listOfPoints)
+})
 
 filInput.onchange = (e) => {
   let url = window.URL.createObjectURL(e.target.files[0])
   Konva.Image.fromURL(url, (img) => {
-    imgObj = img
     group.add(img)
 
     const
@@ -133,19 +162,3 @@ group.on("mousemove", (ke) => {
   document.getElementById("footer").innerHTML = `(${pp.x}, ${pp.y})`
 })
 group.on("mouseup", (ke) => isDraging = false)
-
-
-register("wheel", ev => {
-  moveCanvas(ev.deltaX, ev.deltaY)
-})
-
-register("keydown", ev => {
-  if (ev.key === "ArrowUp")
-    moveCanvas(0, +MOVE_SPEED)
-  else if (ev.key === "ArrowDown")
-    moveCanvas(0, -MOVE_SPEED)
-  else if (ev.key === "ArrowLeft")
-    moveCanvas(+MOVE_SPEED, 0)
-  else if (ev.key === "ArrowRight")
-    moveCanvas(-MOVE_SPEED, 0)
-})
