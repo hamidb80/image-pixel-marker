@@ -1,7 +1,7 @@
 {
-  "name": "my-webpack-project",
-  "version": "1.0.0",
-  "description": "My webpack project",
+  "name": "image-pixel-marker",
+  "version": "0.0.1",
+  "description": "A tool to mark pixels within an image, you can save the points as a json file",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
