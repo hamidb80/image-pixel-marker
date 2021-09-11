@@ -37,7 +37,10 @@ const
   register = (evName, fn) => window.addEventListener(evName, fn),
   getScale = () => group.scale().x,
   addScale = (ds) => setScale(getScale() + ds),
-  setScale = (s) => group.scale({ x: s, y: s }),
+  setScale = (s) => {
+    group.scale({ x: s, y: s })
+    document.getElementById("scale").innerHTML = s
+  },
   moveCanvas = (deltaX, deltaY) => {
     group.x(group.x() + deltaX)
     group.y(group.y() + deltaY)
@@ -171,6 +174,6 @@ stage.on("mousemove", (ke) => {
   isDraging && clickOrDrag(ke)
 
   let pp = realCoordinate(getCoordinate(ke)) // pointer position
-  document.getElementById("footer").innerHTML = `(${pp.x}, ${pp.y})`
+  document.getElementById("position").innerHTML = `(${pp.x}, ${pp.y})`
 })
 stage.on("mouseup", (ke) => isDraging = false)
