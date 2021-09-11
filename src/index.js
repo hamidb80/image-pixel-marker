@@ -1,4 +1,6 @@
 import Konva from "konva"
+import fileDownload from 'js-file-download'
+import hotkeys from 'hotkeys-js'
 import "./styles.css"
 
 const
@@ -58,23 +60,9 @@ const
 register("pen", () => selectedTool = PEN)
 register("eraser", () => selectedTool = ERASER)
 register("imageSelect", () => filInput.click())
-register("z+", () => addScale(+1))
-register("z-", () => addScale(-1))
-register("wheel", ev => moveCanvas(-ev.deltaX, -ev.deltaY))
-register("keydown", ev => {
-  let move = []
-
-  if (ev.key === "ArrowUp")
-    move = [0, +MOVE_SPEED]
-  else if (ev.key === "ArrowDown")
-    move = [0, -MOVE_SPEED]
-  else if (ev.key === "ArrowLeft")
-    move = [+MOVE_SPEED, 0]
-  else if (ev.key === "ArrowRight")
-    move = [-MOVE_SPEED, 0]
-
-  if (move.length == 2)
-    moveCanvas(...move.map(n => n * (ev.shiftKey ? 10 : 1)))
+register("wheel", ev => {
+  if (!ev.ctrlKey) // scale
+    moveCanvas(-ev.deltaX, -ev.deltaY)
 })
 register("clear", () => {
   for (const row_i in coloredCellsMap) {
@@ -90,10 +78,35 @@ register("save", () => {
     for (const col_i in coloredCellsMap[row_i])
       listOfPoints.push([col_i, row_i,].map(n => Number(n))) // [x, y]
 
-  console.log(listOfPoints)
+  fileDownload(
+    JSON.stringify({ points: listOfPoints }),
+    'points.json'
+  )
 })
+hotkeys("up,down,left,right", (ev, handler) => {
+  let move = []
 
+  if (handler.key === "up")
+    move = [0, +MOVE_SPEED]
+  else if (handler.key === "down")
+    move = [0, -MOVE_SPEED]
+  else if (handler.key === "left")
+    move = [+MOVE_SPEED, 0]
+  else if (handler.key === "right")
+    move = [-MOVE_SPEED, 0]
+
+  if (move.length == 2)
+    moveCanvas(...move)
+})
+register("z+", () => addScale(+1))
+register("z-", () => addScale(-1))
+hotkeys("ctrl;=, ctrl;-", { splitKey: ';' }, (ev, handler) => {
+  ev.preventDefault()
+  addScale(handler.key.endsWith('=') ? +1 : -1)
+})
 filInput.onchange = (e) => {
+  document.title = e.target.files[0].name
+
   let url = window.URL.createObjectURL(e.target.files[0])
   Konva.Image.fromURL(url, (img) => {
     group.add(img)
@@ -125,6 +138,7 @@ filInput.onchange = (e) => {
   })
 }
 
+
 function clickOrDrag(konvaEvent) {
   let position = realCoordinate(getCoordinate(konvaEvent))
 
@@ -149,16 +163,14 @@ function clickOrDrag(konvaEvent) {
     }
   }
 }
-
-
-group.on("mousedown", (ke) => {
+stage.on("mousedown", (ke) => {
   isDraging = true
   clickOrDrag(ke)
 })
-group.on("mousemove", (ke) => {
+stage.on("mousemove", (ke) => {
   isDraging && clickOrDrag(ke)
 
   let pp = realCoordinate(getCoordinate(ke)) // pointer position
   document.getElementById("footer").innerHTML = `(${pp.x}, ${pp.y})`
 })
-group.on("mouseup", (ke) => isDraging = false)
+stage.on("mouseup", (ke) => isDraging = false)

@@ -25,6 +25,8 @@
     "webpack-dev-server": "^4.1.1"
   },
   "dependencies": {
+    "hotkeys-js": "^3.8.7",
+    "js-file-download": "^0.4.12",
     "konva": "^8.1.3"
   }
 }
