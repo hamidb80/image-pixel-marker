@@ -1,6 +1,9 @@
 import Konva from "konva"
 import fileDownload from 'js-file-download'
 import hotkeys from 'hotkeys-js'
+
+import { addToObject } from "./utils/object.js"
+
 import "./styles.css"
 
 const
@@ -12,8 +15,9 @@ const
 // --- app states
 let
   isDraging = false,
-  coloredCellsMap = {}, // [y][x]
-  selectedTool = PEN
+  coloredCellsMap = {}, // [y][x] => Konve.rect
+  selectedTool = PEN,
+  selectedColor = 'black'
 
 // --- init canvas
 let
@@ -33,33 +37,49 @@ stage.add(mainLayer)
 
 // --- register canvas events 
 
-const
-  register = (evName, fn) => window.addEventListener(evName, fn),
-  getScale = () => group.scale().x,
-  addScale = (ds) => setScale(getScale() + ds),
-  setScale = (s) => {
-    group.scale({ x: s, y: s })
-    document.getElementById("scale").innerHTML = s
-  },
-  moveCanvas = (deltaX, deltaY) => {
-    group.x(group.x() + deltaX)
-    group.y(group.y() + deltaY)
-  },
+function register(evName, fn) {
+  window.addEventListener(evName, fn)
+}
+function getScale() {
+  return group.scale().x
+}
+function addScale(ds) {
+  setScale(getScale() + ds)
+}
+function setScale(s) {
+  group.scale({ x: s, y: s })
+  document.getElementById("scale").innerHTML = s
+}
+function moveCanvas(deltaX, deltaY) {
+  group.x(group.x() + deltaX)
+  group.y(group.y() + deltaY)
+}
 
-  getCoordinate = (konvaEvent) => ({ x: konvaEvent.evt.offsetX, y: konvaEvent.evt.offsetY }),
-  realCoordinate = ({ x, y }) => ({
+function getCoordinate(konvaEvent) {
+  return {
+    x: konvaEvent.evt.offsetX,
+    y: konvaEvent.evt.offsetY
+  }
+}
+function realCoordinate({ x, y }) {
+  return {
     x: Math.floor((x - group.x()) / getScale()),
     y: Math.floor((y - group.y()) / getScale())
-  }),
-  checkPoint = ({ x, y }) => coloredCellsMap[y] && coloredCellsMap[y][x],
-  addPoint = ({ x, y }, rect) => {
-    if (!coloredCellsMap[y])
-      coloredCellsMap[y] = []
-
-    coloredCellsMap[y][x] = rect
   }
+}
+function checkPoint({ x, y }) {
+  return coloredCellsMap[y] && coloredCellsMap[y][x]
+}
+function addPoint({ x, y }, rect) {
+  if (!coloredCellsMap[y])
+    coloredCellsMap[y] = []
+
+  coloredCellsMap[y][x] = rect
+}
 
 
+register("open-canvas", () => { }) // TODO
+register("set-color", (e) => selectedColor = e.detail[0])
 register("pen", () => selectedTool = PEN)
 register("eraser", () => selectedTool = ERASER)
 register("imageSelect", () => filInput.click())
@@ -76,13 +96,17 @@ register("clear", () => {
   }
 })
 register("save", () => {
-  let listOfPoints = []
+  let color2PointsMap = {}
   for (const row_i in coloredCellsMap)
     for (const col_i in coloredCellsMap[row_i])
-      listOfPoints.push([col_i, row_i,].map(n => Number(n))) // [x, y]
+      addToObject(
+        color2PointsMap,
+        coloredCellsMap[row_i][col_i].fill(),
+        [col_i, row_i,].map(Number)
+      )
 
   fileDownload(
-    JSON.stringify({ points: listOfPoints }),
+    JSON.stringify(color2PointsMap),
     'points.json'
   )
 })
@@ -141,7 +165,6 @@ filInput.onchange = (e) => {
   })
 }
 
-
 function clickOrDrag(konvaEvent) {
   let position = realCoordinate(getCoordinate(konvaEvent))
 
@@ -152,7 +175,7 @@ function clickOrDrag(konvaEvent) {
     let cell = new Konva.Rect({
       x: position.x,
       y: position.y,
-      fill: "red",
+      fill: selectedColor,
       width: 1,
       height: 1,
     })

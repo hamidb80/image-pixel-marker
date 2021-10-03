@@ -7,23 +7,54 @@
 </head>
 
 <body>
+    <script>
+        function trigger(eventName, ...params) {
+            window.dispatchEvent(new CustomEvent(eventName, { detail: params }))
+        }
+    </script>
     <aside>
-        <div class="btn" onclick="window.dispatchEvent(new Event('imageSelect'))"> select an image </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('save'))"> save selected pixels </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('pen'))"> pen </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('eraser'))"> eraser </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('clear'))"> clear </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('z+'))"> zoom in + </div>
-        <div class="btn" onclick="window.dispatchEvent(new Event('z-'))"> zoom out -</div>
+        <div class="btn" onclick="trigger('open-canvas')"> empty canvas </div>
+        <div class="btn" onclick="trigger('imageSelect')"> select an image </div>
+        <div class="btn" onclick="trigger('save')"> save selected pixels </div>
+        <div class="btn" onclick="trigger('pen')"> pen </div>
+        <div class="btn" onclick="trigger('eraser')"> eraser </div>
+        <div class="btn" onclick="trigger('clear')"> clear </div>
+        <div class="btn" onclick="trigger('z+')"> zoom in + </div>
+        <div class="btn" onclick="trigger('z-')"> zoom out -</div>
         <input type="file" id="imageInput" class="hide">
     </aside>
+
+    <div class="overly">
+        <div class="forms">
+            <form class="canvas-size">
+                <input type="number" placeholder="width">
+                <input type="number" placeholder="height">
+                <button> create </button>
+            </form>
+        </div>
+    </div>
 
     <div id="container">
     </div>
 
-    <footer id="footer">
-        <div id="position"></div>
-        <div id="scale"></div>
+    <footer>
+        <div class="empty"></div>
+
+        <div class="color-wrapper">
+            <div onclick="trigger('set-color', 'red')" class="color red"></div>
+            <div onclick="trigger('set-color', 'blue')" class="color blue"></div>
+            <div onclick="trigger('set-color', 'green')" class="color green"></div>
+            <div onclick="trigger('set-color', 'gray')" class="color gray"></div>
+            <div onclick="trigger('set-color', 'black')" class="color black"></div>
+            <div onclick="trigger('set-color', 'white')" class="color white"></div>
+            <div onclick="trigger('set-color', 'purple')" class="color purple"></div>
+            <div onclick="trigger('set-color', 'orange')" class="color orange"></div>
+        </div>
+
+        <div class="canvas-info">
+            <div id="position"></div>
+            <div id="scale"></div>
+        </div>
     </footer>
 </body>
 
