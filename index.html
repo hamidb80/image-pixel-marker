@@ -24,13 +24,14 @@
         <input type="file" id="imageInput" class="hide">
     </aside>
 
-    <div class="overly">
+    <div id="overly" class="active">
         <div class="forms">
-            <form class="canvas-size">
-                <input type="number" placeholder="width">
-                <input type="number" placeholder="height">
-                <button> create </button>
-            </form>
+            <div class="form canvas-size">
+                <input id="width-input" class="canvas-form-input" type="number" placeholder="width">
+                <input id="height-input" class="canvas-form-input" type="number" placeholder="height">
+                <button onclick="trigger('canvas-size-form' ,'create')"> create </button>
+                <button onclick="trigger('canvas-size-form' ,'cancel')"> cancel </button>
+            </div>
         </div>
     </div>
 

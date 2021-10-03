@@ -76,9 +76,39 @@ function addPoint({ x, y }, rect) {
 
   coloredCellsMap[y][x] = rect
 }
+function drawGrid(w, h) {
+  const
+    commonLineProps = {
+      fill: "transparent",
+      stroke: "rgba(0,0,0,0.4)",
+      strokeWidth: STROKE_WIDTH,
+    },
+    vline = { points: [0, 0, 0, h] },
+    hline = { points: [0, 0, w, 0] }
 
+  for (let y = 0; y <= h; y++)
+    group.add(new Konva.Line({
+      y,
+      ...hline,
+      ...commonLineProps
+    }))
 
-register("open-canvas", () => { }) // TODO
+  for (let x = 0; x <= w; x++)
+    group.add(new Konva.Line({
+      x,
+      ...vline,
+      ...commonLineProps
+    }))
+}
+
+register('canvas-size-form', e => {
+  if (e.detail[0] === 'create') {
+    let els = [...document.querySelectorAll('.canvas-form-input')]
+    drawGrid(...els.map(el => Number(el.value)))
+  }
+  document.body.className = ""
+})
+register("open-canvas", () => document.body.className = "show-form")
 register("set-color", (e) => selectedColor = e.detail[0])
 register("pen", () => selectedTool = PEN)
 register("eraser", () => selectedTool = ERASER)
@@ -137,30 +167,7 @@ filInput.onchange = (e) => {
   let url = window.URL.createObjectURL(e.target.files[0])
   Konva.Image.fromURL(url, (img) => {
     group.add(img)
-
-    const
-      commonLineProps = {
-        fill: "transparent",
-        stroke: "rgba(0,0,0,0.4)",
-        strokeWidth: STROKE_WIDTH,
-      },
-      vline = { points: [0, 0, 0, img.height()] },
-      hline = { points: [0, 0, img.width(), 0] }
-
-    for (let y = 0; y <= img.height(); y++)
-      group.add(new Konva.Line({
-        y,
-        ...hline,
-        ...commonLineProps
-      }))
-
-    for (let x = 0; x <= img.width(); x++)
-      group.add(new Konva.Line({
-        x,
-        ...vline,
-        ...commonLineProps
-      }))
-
+    drawGrid(img.width(), img.height())
     mainLayer.draw()
   })
 }
