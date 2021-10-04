@@ -17,7 +17,8 @@ let
   isDraging = false,
   coloredCellsMap = {}, // [y][x] => Konve.rect
   selectedTool = PEN,
-  selectedColor = 'black'
+  selectedColor = 'black',
+  loadPurpose = "" // "image" | "import"
 
 // --- init canvas
 let
@@ -100,6 +101,14 @@ function drawGrid(w, h) {
       ...commonLineProps
     }))
 }
+function clearBoard() {
+  for (const row_i in coloredCellsMap) {
+    for (const col_i in coloredCellsMap[row_i]) {
+      coloredCellsMap[row_i][col_i].destroy()
+      delete coloredCellsMap[row_i][col_i]
+    }
+  }
+}
 
 register('canvas-size-form', e => {
   if (e.detail[0] === 'create') {
@@ -112,19 +121,15 @@ register("open-canvas", () => document.body.className = "show-form")
 register("set-color", (e) => selectedColor = e.detail[0])
 register("pen", () => selectedTool = PEN)
 register("eraser", () => selectedTool = ERASER)
-register("imageSelect", () => filInput.click())
+register("image-select", () => {
+  loadPurpose = "image"
+  filInput.click()
+})
 register("wheel", ev => {
   if (!ev.ctrlKey) // scale
     moveCanvas(-ev.deltaX, -ev.deltaY)
 })
-register("clear", () => {
-  for (const row_i in coloredCellsMap) {
-    for (const col_i in coloredCellsMap[row_i]) {
-      coloredCellsMap[row_i][col_i].destroy()
-      delete coloredCellsMap[row_i][col_i]
-    }
-  }
-})
+register("clear", clearBoard)
 register("save", () => {
   let color2PointsMap = {}
   for (const row_i in coloredCellsMap)
@@ -139,6 +144,10 @@ register("save", () => {
     JSON.stringify(color2PointsMap),
     'points.json'
   )
+})
+register("load", () => {
+  loadPurpose = "import"
+  filInput.click()
 })
 hotkeys("up,down,left,right", (ev, handler) => {
   let move = []
@@ -162,14 +171,39 @@ hotkeys("ctrl;=, ctrl;-", { splitKey: ';' }, (ev, handler) => {
   addScale(handler.key.endsWith('=') ? +1 : -1)
 })
 filInput.onchange = (e) => {
-  document.title = e.target.files[0].name
+  const firstFile = e.target.files[0]
 
-  let url = window.URL.createObjectURL(e.target.files[0])
-  Konva.Image.fromURL(url, (img) => {
-    group.add(img)
-    drawGrid(img.width(), img.height())
-    mainLayer.draw()
-  })
+  if (loadPurpose === "image") {
+    document.title = firstFile.name
+
+    let url = window.URL.createObjectURL(firstFile)
+    Konva.Image.fromURL(url, (img) => {
+      group.add(img)
+      drawGrid(img.width(), img.height())
+      mainLayer.draw()
+    })
+  }
+  else if (loadPurpose === "import") {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      const savedData = JSON.parse(reader.result)
+
+      clearBoard()
+      for (const color in savedData)
+        for (const point of savedData[color]) {
+          let cell = new Konva.Rect({
+            x: point[0],
+            y: point[1],
+            fill: color,
+            width: 1,
+            height: 1,
+          })
+          group.add(cell)
+          addPoint(position, cell)
+        }
+    })
+    reader.readAsText(firstFile)
+  }
 }
 
 function clickOrDrag(konvaEvent) {
