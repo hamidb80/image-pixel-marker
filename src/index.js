@@ -145,7 +145,7 @@ register("save", () => {
     'points.json'
   )
 })
-register("load", () => {
+register("import", () => {
   loadPurpose = "import"
   filInput.click()
 })
